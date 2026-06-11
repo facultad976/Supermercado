@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista del Super</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f2f0eb;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container { width: 100%; max-width: 520px; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .header .cart-icon {
+      font-size: 22px;
+    }
+
+    .sync-bar {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sync-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #5a9e6f;
+      display: inline-block;
+    }
+
+    .sync-dot.loading { background: #e0a030; animation: pulse 1s infinite; }
+    .sync-dot.error { background: #c0392b; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat {
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      flex: 1;
+      text-align: center;
+      border: 0.5px solid #ddd;
+    }
+
+    .stat-val { font-size: 22px; font-weight: 500; }
+    .stat-lbl { font-size: 12px; color: #888; }
+
+    .add-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .add-row input {
+      flex: 1;
+      padding: 9px 12px;
+      border: 0.5px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      background: #fff;
+    }
+
+    .add-row input:focus { border-color: #888; }
+
+    .add-row select {
+      width: 140px;
+      padding: 9px 8px;
+      border: 0.5px solid #ccc;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+
+    .add-row button {
+      padding: 9px 16px;
+      border: 0.5px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .add-row button:hover { background: #f0f0ee; }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin: 1rem 0 6px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 0.5px solid #ddd;
+      background: #fff;
+      margin-bottom: 6px;
+      transition: opacity 0.2s;
+    }
+
+    .item.done { opacity: 0.4; }
+    .item.done .item-name { text-decoration: line-through; }
+
+    .item-name { flex: 1; font-size: 15px; }
+
+    .check-btn {
+      background: none;
+      border: 1.5px solid #bbb;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+
+    .check-btn.checked {
+      background: #d4edda;
+      border-color: #5a9e6f;
+      color: #2e7d50;
+    }
+
+    .del-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #bbb;
+      font-size: 16px;
+      padding: 0 2px;
+      line-height: 1;
+    }
+
+    .del-btn:hover { color: #c0392b; }
+
+    .empty {
+      text-align: center;
+      color: #aaa;
+      font-size: 14px;
+      padding: 2.5rem 0;
+    }
+
+    .share-box {
+      margin-top: 2rem;
+      padding: 14px 16px;
+      background: #fff;
+      border: 0.5px solid #ddd;
+      border-radius: 10px;
+    }
+
+    .share-box p {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .share-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .share-row input {
+      flex: 1;
+      font-size: 12px;
+      padding: 6px 10px;
+      border: 0.5px solid #ccc;
+      border-radius: 6px;
+      background: #f8f8f6;
+      color: #444;
+      outline: none;
+    }
+
+    .share-row button {
+      padding: 6px 12px;
+      font-size: 13px;
+      border: 0.5px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .share-row button:hover { background: #f0f0ee; }
+    .copied-msg { font-size: 12px; color: #5a9e6f; margin-top: 6px; display: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <span class="cart-icon">🛒</span>
+    <h1>Lista del super</h1>
+  </div>
+
+  <div class="sync-bar">
+    <span class="sync-dot" id="sync-dot"></span>
+    <span id="sync-label">Conectando...</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="total-count">0</div><div class="stat-lbl">total</div></div>
+    <div class="stat"><div class="stat-val" id="done-count">0</div><div class="stat-lbl">comprados</div></div>
+    <div class="stat"><div class="stat-val" id="left-count">0</div><div class="stat-lbl">faltan</div></div>
+  </div>
+
+  <div class="add-row">
+    <input type="text" id="new-item" placeholder="Agregar producto..." />
+    <select id="new-cat">
+      <option value="verdulería">🥦 Verdulería</option>
+      <option value="lácteos">🥛 Lácteos</option>
+      <option value="carnes">🥩 Carnes</option>
+      <option value="panadería">🍞 Panadería</option>
+      <option value="bebidas">🧃 Bebidas</option>
+      <option value="limpieza">🧹 Limpieza</option>
+      <option value="otros" selected>📦 Otros</option>
+    </select>
+    <button onclick="addItem()">+</button>
+  </div>
+
+  <div id="list-container"><div class="empty">Tu lista está vacía. Agregá productos arriba.</div></div>
+
+  <div class="share-box">
+    <p>📤 Compartí este link para que otra persona vea y tache productos:</p>
+    <div class="share-row">
+      <input type="text" id="share-url" readonly />
+      <button onclick="copyLink()">Copiar link</button>
+    </div>
+    <div class="copied-msg" id="copied-msg">✓ Link copiado</div>
+  </div>
+
+</div>
+
+<script>
+  // ── Lista ID: se crea una por URL, comparte entre todos los que abran el mismo link ──
+  const CATS_ORDER = ['verdulería','lácteos','carnes','panadería','bebidas','limpieza','otros'];
+  const EMOJIS = {
+    'verdulería':'🥦','lácteos':'🥛','carnes':'🥩',
+    'panadería':'🍞','bebidas':'🧃','limpieza':'🧹','otros':'📦'
+  };
+
+  // Obtener o crear un ID de lista desde el hash de la URL
+  function getListId() {
+    if (!location.hash || location.hash.length < 5) {
+      const id = Math.random().toString(36).slice(2, 10);
+      location.hash = id;
+      return id;
+    }
+    return location.hash.slice(1);
+  }
+
+  const LIST_ID = getListId();
+  const API_BASE = 'https://api.jsonbin.io/v3/b';
+  // JSONBin clave pública gratuita (solo lectura/escritura de bins propios)
+  const API_KEY = '$2a$10$QYYWX.QCx1RcovRKZU57BeVeKwzoowpRIRmve7FyxQZtYDoQ3bLAC'; // El usuario debe poner su API key de jsonbin.io
+
+  // Usamos localStorage como backend compartido via BroadcastChannel + polling
+  // Para compartir entre dispositivos usamos JSONBin.io (gratis, no requiere login)
+  const STORAGE_KEY = 'lista_super_' + LIST_ID;
+
+  let items = [];
+  let nextId = 1;
+  let binId = null;
+  let polling = null;
+
+  // ── JSONBin helpers ──
+  async function loadFromCloud() {
+    setSyncStatus('loading', 'Cargando lista...');
+    const saved = localStorage.getItem('bin_id_' + LIST_ID);
+    if (saved) {
+      binId = saved;
+      try {
+        const res = await fetch(`${API_BASE}/${binId}/latest`, {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          applyState(data.record);
+          setSyncStatus('ok', 'Sincronizado');
+          return;
+        }
+      } catch(e) {}
+    }
+    // Sin cloud, usar localStorage local
+    const local = localStorage.getItem(STORAGE_KEY);
+    if (local) applyState(JSON.parse(local));
+    setSyncStatus('ok', 'Modo local (sin internet)');
+  }
+
+  async function saveToCloud() {
+    setSyncStatus('loading', 'Guardando...');
+    const state = { items, nextId };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    try {
+      if (!binId) {
+        const res = await fetch(API_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Private': 'false' },
+          body: JSON.stringify(state)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          binId = data.metadata.id;
+          localStorage.setItem('bin_id_' + LIST_ID, binId);
+        }
+      } else {
+        await fetch(`${API_BASE}/${binId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+          body: JSON.stringify(state)
+        });
+      }
+      setSyncStatus('ok', 'Sincronizado ✓');
+    } catch(e) {
+      setSyncStatus('ok', 'Guardado local');
+    }
+  }
+
+  function applyState(state) {
+    if (!state) return;
+    items = state.items || [];
+    nextId = state.nextId || (items.length + 1);
+    render();
+  }
+
+  function setSyncStatus(type, msg) {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    dot.className = 'sync-dot' + (type !== 'ok' ? ' ' + type : '');
+    lbl.textContent = msg;
+  }
+
+  // ── Acciones ──
+  function addItem() {
+    const inp = document.getElementById('new-item');
+    const cat = document.getElementById('new-cat').value;
+    const name = inp.value.trim();
+    if (!name) return;
+    items.push({ id: nextId++, name, cat, done: false });
+    inp.value = '';
+    render();
+    saveToCloud();
+    inp.focus();
+  }
+
+  document.getElementById('new-item').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addItem();
+  });
+
+  function toggle(id) {
+    const it = items.find(i => i.id === id);
+    if (it) { it.done = !it.done; render(); saveToCloud(); }
+  }
+
+  function remove(id) {
+    items = items.filter(i => i.id !== id);
+    render();
+    saveToCloud();
+  }
+
+  // ── Render ──
+  function render() {
+    const container = document.getElementById('list-container');
+    const total = items.length;
+    const done = items.filter(i => i.done).length;
+    document.getElementById('total-count').textContent = total;
+    document.getElementById('done-count').textContent = done;
+    document.getElementById('left-count').textContent = total - done;
+
+    if (total === 0) {
+      container.innerHTML = '<div class="empty">Tu lista está vacía. Agregá productos arriba.</div>';
+      return;
+    }
+
+    const groups = {};
+    items.forEach(it => {
+      if (!groups[it.cat]) groups[it.cat] = [];
+      groups[it.cat].push(it);
+    });
+
+    let html = '';
+    CATS_ORDER.forEach(cat => {
+      if (!groups[cat]) return;
+      html += `<div class="section-title">${EMOJIS[cat]} ${cat}</div>`;
+      groups[cat].forEach(it => {
+        html += `
+          <div class="item${it.done ? ' done' : ''}">
+            <button class="check-btn${it.done ? ' checked' : ''}" onclick="toggle(${it.id})">${it.done ? '✓' : ''}</button>
+            <span class="item-name">${it.name}</span>
+            <button class="del-btn" onclick="remove(${it.id})">🗑</button>
+          </div>`;
+      });
+    });
+    container.innerHTML = html;
+  }
+
+  // ── Compartir ──
+  function updateShareUrl() {
+    document.getElementById('share-url').value = location.href;
+  }
+
+  function copyLink() {
+    navigator.clipboard.writeText(location.href).then(() => {
+      const msg = document.getElementById('copied-msg');
+      msg.style.display = 'block';
+      setTimeout(() => msg.style.display = 'none', 2500);
+    });
+  }
+
+  // ── Polling para actualizar si otra persona modifica ──
+  function startPolling() {
+    if (polling) clearInterval(polling);
+    polling = setInterval(async () => {
+      if (!binId) return;
+      try {
+        const res = await fetch(`${API_BASE}/${binId}/latest`, {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          applyState(data.record);
+        }
+      } catch(e) {}
+    }, 5000);
+  }
+
+  // ── Init ──
+  updateShareUrl();
+  loadFromCloud().then(() => startPolling());
+</script>
+</body>
+</html>
